@@ -1,0 +1,4 @@
+name = My first form
+description = My first drupal form with checkbox
+package = custom module
+core = 7.x

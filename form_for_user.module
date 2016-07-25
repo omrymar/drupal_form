@@ -1,0 +1,218 @@
+<?php
+/**
+ * Implements hook_theme().
+ */
+
+function form_for_user_theme($existing, $type, $theme, $path) {
+  $items = array();
+
+  $items['form_for_user_content'] = array(
+    'render element' => 'form',
+    'template' => 'templates/form_for_user_content',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+
+function form_for_user_block_info() {
+  $blocks['form_for_user_block'] = array(
+    'info' => t('Rend form'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+
+function form_for_user_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'form_for_user_block':
+      $block['subject'] = 'Please complete this registration form';
+
+      $block['content'] = drupal_get_form('form_for_user_form');
+
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * Implements hook_form().
+ */
+
+function form_for_user_form($form, &$form_state) {
+  $form = array();
+
+  $form['userinfo'] = array(
+    '#title' => t('User Information'),
+    '#description' => t('You can add information about yourself here'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 0,
+    '#attached' => array(
+      'css' => array(
+        drupal_get_path('module', 'form_for_user') . '/css/styles.css',
+      ),
+      'js' => array(
+        //drupal_get_path('module', 'form_for_user') . '/js/script-1.js',
+        drupal_get_path('module', 'form_for_user') . '/js/script-2.js',
+      ),
+    ),
+    '#theme' => 'form_for_user_content',
+
+    '#attributes' => array(
+      'class' => array(
+        'form_for_user_content_wrapper'
+      ),
+    ),
+
+  );
+
+  $form['userinfo']['gender'] = array(
+    '#type' => 'radios',
+    '#title' => t('Gender:'),
+    '#options' => array(
+      0 => t('Man'),
+      1 => t('Woman'),
+    ),
+    '#description' => t('Men or women?'),
+    '#required' => TRUE,
+    '#weight' => 1,
+  );
+
+  $form['userinfo']['form_for_user_first_name'] = array(
+    '#title' => t('First name'),
+    '#type' => 'textfield',
+    '#description' => t('Enter your first name into this field'),
+    '#default_value' => '',
+    '#maxlength' => 255,
+    '#size' => 25,
+    '#attributes' => array(
+      'placeholder' => t('Silvester'),
+      'class' => array(
+        'test-class',
+        'test-class-1',
+      ),
+    ),
+    '#required' => TRUE,
+    '#weight' => 2,
+  );
+
+  $form['userinfo']['form_for_user_last_name'] = array(
+    '#title' => t('Last name'),
+    '#type' => 'textfield',
+    '#description' => t('Enter your last name into this field'),
+    '#default_value' => '',
+    '#maxlength' => 255,
+    '#size' => 25,
+    '#attributes' => array(
+      'placeholder' => t('Stalone'),
+      'class' => array(
+        'test-class-2',
+        'test-class-3',
+      ),
+    ),
+    '#required' => TRUE,
+    '#weight' => 3,
+  );
+
+  $form['userinfo']['comp_info'] = array(
+    '#title' => t('Do you have a computer'),
+    '#type' => 'radios',
+    '#options' => array('yes' => t('Yes'), 'no' => t('No')),
+    '#required' =>TRUE,
+    '#weight' => 4,
+  );
+
+  $form['userinfo']['comp_info']['status'] = array(
+    '#title' => 'Select a operation system',
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="comp_info"]' =>array('value' => 'yes'),
+      ),
+    ),
+    '#weight' => 5,
+  );
+
+  $form['userinfo']['comp_info']['status']['operation_system'] = array(
+    '#type' => 'select',
+    '#title' => t('Pre installed operating system'),
+    '#default_value' => 'Windows',
+    '#description' => t('Select your operation system in this field'),
+    '#required' => TRUE,
+    '#options' => array(
+      'Windows' => t('Windows'),
+      'Linux' => t('Linux'),
+      'FreeBSD' => t('FreeBSD'),
+      'Dos' => t('MSDos'),
+    ),
+    '#weight' => 6,
+  );
+
+  $form['userinfo']['family_status'] = array(
+    '#title' => t('Select your family status'),
+    '#type' => 'select',
+    '#description' => t('Please, select you family status in this field'),
+    '#default_value' => 'Married',
+    '#required' => TRUE,
+    '#options' => array(
+      'Married' => t('Married'),
+      'Not_married' => t('Not married'),
+    ),
+    '#weight' => 7,
+  );
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+  );
+
+  $form['actions']['form_for_user_form_submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Send'),
+  );
+
+  return $form;
+}
+
+function form_for_user_form_submit($form, &$form_state){
+
+  $values = $form_state['values']['userinfo'];
+
+  $gender = $values['gender'] ? "Woman" : "Man";
+
+  $message_type = $values['gender'] ? 'status' : 'warning';
+
+  $message = t('@name is a @hi_is_gender', array(
+      '@name' => $values['form_for_user_first_name'] . $values['form_for_user_last_name'],
+      '@hi_is_gender' => $gender)
+  );
+
+  $c = $values['gender'];
+
+  variable_set('gender', $c);
+
+  $c = $values['form_for_user_first_name'];
+
+  variable_set('form_for_user_first_name', $c);
+
+  $c = $values['form_for_user_last_name'];
+
+  variable_set('form_for_user_last_name', $c);
+
+  drupal_set_message($message, $message_type);
+
+}
