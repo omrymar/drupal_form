@@ -107,6 +107,7 @@ function form_for_user_form($form, &$form_state) {
       ),
     ),
     '#required' => TRUE,
+    '#element_validate' => array('form_for_user_form_first_name_validate'),
     '#weight' => 2,
   );
 
@@ -125,8 +126,24 @@ function form_for_user_form($form, &$form_state) {
       ),
     ),
     '#required' => TRUE,
+    '#element_validate' => array('form_for_user_form_last_name_validate'),
     '#weight' => 3,
   );
+
+  /*$form['userinfo']['form_for_user_date'] = array(
+    '#title' => t('Date. Year-month-day'),
+    '#type' => 'textfield',
+    '#description' => t('Enter a date into this field'),
+    '#default_value' => '',
+    '#maxlength' => 15,
+    '#size' => 10,
+    '#attributes' => array(
+      'placeholder' => t('2015-02-15'),
+    ),
+    '#required' => TRUE,
+    '#element_validate' => array('form_for_user_form_date_validate'),
+    '#weight' => 4,
+  );*/
 
   $form['userinfo']['comp_info'] = array(
     '#title' => t('Do you have a computer'),
@@ -136,7 +153,7 @@ function form_for_user_form($form, &$form_state) {
       'yes' => t('Yes')
     ),
     '#required' =>TRUE,
-    '#weight' => 4,
+    '#weight' => 5,
   );
 
   $form['userinfo']['comp_info']['status'] = array(
@@ -149,7 +166,7 @@ function form_for_user_form($form, &$form_state) {
         ':input[name="comp_info"]' =>array('value' => 'yes'),
       ),
     ),
-    '#weight' => 5,
+    '#weight' => 6,
   );
 
   $form['userinfo']['comp_info']['status']['operation_system'] = array(
@@ -164,7 +181,7 @@ function form_for_user_form($form, &$form_state) {
       'FreeBSD' => t('FreeBSD'),
       'Dos' => t('MSDos'),
     ),
-    '#weight' => 6,
+    '#weight' => 7,
   );
 
   $form['userinfo']['family_status'] = array(
@@ -175,9 +192,9 @@ function form_for_user_form($form, &$form_state) {
     '#required' => TRUE,
     '#options' => array(
       'Married' => t('Married'),
-      'Not_married' => t('Not married'),
-    ),
-    '#weight' => 7,
+      'Not_married' => t('Not_married'),
+      ),
+    '#weight' => 8,
   );
 
   $form['actions'] = array(
@@ -187,9 +204,90 @@ function form_for_user_form($form, &$form_state) {
   $form['actions']['form_for_user_form_submit'] = array(
     '#type' => 'submit',
     '#value' => t('Send'),
+    '#submit' => array(
+      'form_for_user_form_submit',
+    ),
+  );
+
+  $form['actions']['form_for_user_form_submit_some_element'] = array(
+    '#type' => 'submit',
+    '#value' => t('Second submit'),
+    '#submit' => array(
+      'form_for_user_form_submit_custom',
+    ),
+  );
+
+  $form['actions']['form_for_user_form_submit_all_form'] = array(
+    '#type' => 'submit',
+    '#value' => t('Third submit'),
+    '#submit' => array(
+      'form_for_user_form_submit_custom_2',
+    ),
+  );
+
+  //$form['#submit'][] = 'form_for_user_form_submit';
+
+  //$form['#submit'][] = 'form_for_user_form_submit_custom';
+
+  $form['actions']['form_for_user_form_submit_cancel'] = array(
+    '#type' => 'button',
+    '#value' => t('Cancel'),
+    '#limit_validation_errors' => array(),
   );
 
   return $form;
+}
+
+function  form_for_user_form_validate($form, &$form_state) {
+  $values = $form_state['values'];
+
+  if (!preg_match('/^[a-z\s]+$/i', $values['form_for_user_first_name'])) {
+    form_set_error(
+      'form_for_user_first_name',
+      t('The first name contains invalid characters')
+    );
+  }
+}
+
+function form_for_user_form_date_validate($form, &$form_state){
+
+  $values = $form_state['values'];
+
+  if(empty($values['form_for_user_date'])){
+    form_set_error(
+      'form_for_user_date',
+      t('The field for date is empty. Please, enter a date correct.')
+    );
+  }
+  elseif (!preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $values['form_for_user_date'])) {
+    form_set_error(
+      'form_for_user_date',
+      t('The date field contains invalid characters.')
+    );
+  }
+
+}
+
+function  form_for_user_form_first_name_validate($form, &$form_state) {
+  $values = $form_state['values'];
+
+  if (!preg_match('/^[a-z\s]+$/i', $values['form_for_user_first_name'])) {
+    form_set_error(
+      'form_for_user_first_name',
+      t('The first name contains invalid characters')
+    );
+  }
+}
+
+function  form_for_user_form_last_name_validate($form, &$form_state) {
+  $values = $form_state['values'];
+
+  if (!preg_match('/^[a-z\s]+$/i', $values['form_for_user_last_name'])) {
+    form_set_error(
+      'form_for_user_last_name',
+      t('The last name contains invalid characters')
+    );
+  }
 }
 
 function form_for_user_form_submit($form, &$form_state){
@@ -209,7 +307,7 @@ function form_for_user_form_submit($form, &$form_state){
 
   if ($values['comp_info'] == "no")
   {
-    $yes_no_comp= "does not have a computer";
+    $yes_no_comp = "does not have a computer";
   }
   else
   {
@@ -237,5 +335,55 @@ function form_for_user_form_submit($form, &$form_state){
   variable_set('form_for_user_last_name', $c);
 
   drupal_set_message($message);
+
+}
+
+function form_for_user_form_submit_custom($form, &$form_state) {
+
+  $values = $form_state['values'];
+
+  $married_yes_no = $values['family_status'];
+
+  $message = t(' @name is @married_yes_no.', array(
+      '@name' => $values['form_for_user_first_name'] .' '. $values['form_for_user_last_name'],
+      '@married_yes_no' => $married_yes_no,
+    )
+  );
+
+  drupal_set_message($message);
+}
+
+function form_for_user_form_submit_custom_2($form, &$form_state) {
+  drupal_set_message(t('Custom submit has been triggered'));
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+
+function form_for_user_form_form_for_user_form_alter(&$form, &$form_state, $form_id) {
+// add a date_field to form using hook_form_form_id_alter function
+ if ($form_id == 'form_for_user_form'){
+
+   $form['userinfo']['form_for_user_date'] = array(
+     '#title' => t('Date. Year-month-day'),
+     '#type' => 'textfield',
+     '#description' => t('Enter a date into this field'),
+     '#default_value' => '',
+     '#maxlength' => 15,
+     '#size' => 10,
+     '#attributes' => array(
+       'placeholder' => t('2015-02-15'),
+     ),
+     '#required' => TRUE,
+     '#element_validate' => array('form_for_user_form_date_validate'),
+     '#weight' => 4,
+   );
+
+ }
+
+ //realize a fifth section of the homework
+
+ $form['actions']['form_for_user_form_submit_all_form']['#submit'] = $form['actions']['form_for_user_form_submit']['#submit'];
 
 }
